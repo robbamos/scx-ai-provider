@@ -1,8 +1,8 @@
 import type {
   JSONValue,
-  TranscriptionModelV1,
-  TranscriptionModelV1CallOptions,
-  TranscriptionModelV1CallWarning,
+  TranscriptionModelV2,
+  TranscriptionModelV2CallOptions,
+  TranscriptionModelV2CallWarning,
 } from '@ai-sdk/provider';
 import type { FetchFunction } from '@ai-sdk/provider-utils';
 import type { ScxTranscriptionModelId } from './scx-transcription-options.js';
@@ -25,8 +25,8 @@ interface TranscriptionApiResponse {
   duration?: number;
 }
 
-export class ScxTranscriptionModel implements TranscriptionModelV1 {
-  readonly specificationVersion = 'v1';
+export class ScxTranscriptionModel implements TranscriptionModelV2 {
+  readonly specificationVersion = 'v2';
   readonly modelId: ScxTranscriptionModelId;
   readonly provider: string;
 
@@ -42,7 +42,7 @@ export class ScxTranscriptionModel implements TranscriptionModelV1 {
   }
 
   async doGenerate(
-    options: TranscriptionModelV1CallOptions
+    options: TranscriptionModelV2CallOptions
   ): Promise<{
     text: string;
     segments: Array<{
@@ -52,7 +52,7 @@ export class ScxTranscriptionModel implements TranscriptionModelV1 {
     }>;
     language: string | undefined;
     durationInSeconds: number | undefined;
-    warnings: TranscriptionModelV1CallWarning[];
+    warnings: TranscriptionModelV2CallWarning[];
     request?: { body?: string };
     response: {
       timestamp: Date;
@@ -70,7 +70,7 @@ export class ScxTranscriptionModel implements TranscriptionModelV1 {
       providerOptions,
     } = options;
 
-    const warnings: TranscriptionModelV1CallWarning[] = [];
+    const warnings: TranscriptionModelV2CallWarning[] = [];
 
     // Convert Uint8Array to base64 string if needed
     const audioData =

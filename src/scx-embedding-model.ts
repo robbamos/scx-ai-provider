@@ -1,6 +1,6 @@
 import type {
-  EmbeddingModelV1,
-  EmbeddingModelV1Embedding,
+  EmbeddingModelV2,
+  EmbeddingModelV2Embedding,
 } from '@ai-sdk/provider';
 import type { FetchFunction } from '@ai-sdk/provider-utils';
 import type { ScxEmbeddingModelId } from './scx-embedding-options.js';
@@ -20,8 +20,8 @@ interface EmbeddingApiResponse {
   };
 }
 
-export class ScxEmbeddingModel implements EmbeddingModelV1<string> {
-  readonly specificationVersion = 'v1';
+export class ScxEmbeddingModel implements EmbeddingModelV2<string> {
+  readonly specificationVersion = 'v2';
   readonly modelId: ScxEmbeddingModelId;
   readonly provider: string;
   readonly maxEmbeddingsPerCall = 2048;
@@ -40,7 +40,7 @@ export class ScxEmbeddingModel implements EmbeddingModelV1<string> {
     abortSignal?: AbortSignal;
     headers?: Record<string, string | undefined>;
   }): Promise<{
-    embeddings: EmbeddingModelV1Embedding[];
+    embeddings: EmbeddingModelV2Embedding[];
     usage?: { tokens: number };
     rawResponse?: { headers?: Record<string, string> };
   }> {
