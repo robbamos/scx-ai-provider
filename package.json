@@ -39,7 +39,11 @@
   },
   "devDependencies": {
     "@types/bun": "latest",
-    "typescript": "^5.8.3"
+    "typescript": "^5.8.3",
+    "semantic-release": "^24.0.0",
+    "@semantic-release/changelog": "^6.0.3",
+    "@semantic-release/git": "^10.0.1",
+    "conventional-changelog-conventionalcommits": "^8.0.0"
   },
   "peerDependencies": {
     "ai": ">=4.0.0"
@@ -49,7 +53,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/scx-ai/scx-ai-provider"
+    "url": "https://github.com/robbamos/scx-ai-provider.git"
   },
   "keywords": [
     "ai",
