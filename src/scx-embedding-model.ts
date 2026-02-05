@@ -1,6 +1,9 @@
 import type {
-  EmbeddingModelV1,
-  EmbeddingModelV1Embedding,
+  EmbeddingModelV3,
+  EmbeddingModelV3CallOptions,
+  EmbeddingModelV3Embedding,
+  EmbeddingModelV3Result,
+  SharedV3Warning,
 } from '@ai-sdk/provider';
 import type { FetchFunction } from '@ai-sdk/provider-utils';
 import type { ScxEmbeddingModelId } from './scx-embedding-options.js';
@@ -20,12 +23,12 @@ interface EmbeddingApiResponse {
   };
 }
 
-export class ScxEmbeddingModel implements EmbeddingModelV1<string> {
-  readonly specificationVersion = 'v1';
+export class ScxEmbeddingModel implements EmbeddingModelV3 {
+  readonly specificationVersion = 'v3';
   readonly modelId: ScxEmbeddingModelId;
   readonly provider: string;
-  readonly maxEmbeddingsPerCall = 2048;
-  readonly supportsParallelCalls = true;
+  readonly maxEmbeddingsPerCall: number = 2048;
+  readonly supportsParallelCalls: boolean = true;
 
   private readonly config: ScxEmbeddingModelConfig;
 
@@ -35,15 +38,7 @@ export class ScxEmbeddingModel implements EmbeddingModelV1<string> {
     this.config = config;
   }
 
-  async doEmbed(options: {
-    values: string[];
-    abortSignal?: AbortSignal;
-    headers?: Record<string, string | undefined>;
-  }): Promise<{
-    embeddings: EmbeddingModelV1Embedding[];
-    usage?: { tokens: number };
-    rawResponse?: { headers?: Record<string, string> };
-  }> {
+  async doEmbed(options: EmbeddingModelV3CallOptions): Promise<EmbeddingModelV3Result> {
     const { values, abortSignal, headers: additionalHeaders } = options;
 
     const requestBody = {
@@ -90,7 +85,7 @@ export class ScxEmbeddingModel implements EmbeddingModelV1<string> {
     });
 
     // Handle both response formats
-    const embeddings = Array.isArray(responseBody)
+    const embeddings: EmbeddingModelV3Embedding[] = Array.isArray(responseBody)
       ? responseBody.map((d) => d.embedding)
       : (responseBody.data?.map((d) => d.embedding) ?? []);
 
@@ -104,11 +99,15 @@ export class ScxEmbeddingModel implements EmbeddingModelV1<string> {
           }
         : undefined;
 
+    const warnings: SharedV3Warning[] = [];
+
     return {
       embeddings,
       usage,
-      rawResponse: {
+      warnings,
+      response: {
         headers: responseHeaders,
+        body: responseBody,
       },
     };
   }

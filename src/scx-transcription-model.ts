@@ -1,8 +1,8 @@
 import type {
-  JSONValue,
-  TranscriptionModelV1,
-  TranscriptionModelV1CallOptions,
-  TranscriptionModelV1CallWarning,
+  JSONObject,
+  SharedV3Warning,
+  TranscriptionModelV3,
+  TranscriptionModelV3CallOptions,
 } from '@ai-sdk/provider';
 import type { FetchFunction } from '@ai-sdk/provider-utils';
 import type { ScxTranscriptionModelId } from './scx-transcription-options.js';
@@ -25,8 +25,8 @@ interface TranscriptionApiResponse {
   duration?: number;
 }
 
-export class ScxTranscriptionModel implements TranscriptionModelV1 {
-  readonly specificationVersion = 'v1';
+export class ScxTranscriptionModel implements TranscriptionModelV3 {
+  readonly specificationVersion = 'v3';
   readonly modelId: ScxTranscriptionModelId;
   readonly provider: string;
 
@@ -42,7 +42,7 @@ export class ScxTranscriptionModel implements TranscriptionModelV1 {
   }
 
   async doGenerate(
-    options: TranscriptionModelV1CallOptions
+    options: TranscriptionModelV3CallOptions
   ): Promise<{
     text: string;
     segments: Array<{
@@ -52,7 +52,8 @@ export class ScxTranscriptionModel implements TranscriptionModelV1 {
     }>;
     language: string | undefined;
     durationInSeconds: number | undefined;
-    warnings: TranscriptionModelV1CallWarning[];
+    warnings: SharedV3Warning[];
+    providerMetadata?: Record<string, JSONObject>;
     request?: { body?: string };
     response: {
       timestamp: Date;
@@ -60,7 +61,6 @@ export class ScxTranscriptionModel implements TranscriptionModelV1 {
       headers: Record<string, string> | undefined;
       body?: unknown;
     };
-    providerMetadata?: Record<string, Record<string, JSONValue>>;
   }> {
     const {
       audio,
@@ -69,8 +69,6 @@ export class ScxTranscriptionModel implements TranscriptionModelV1 {
       headers: additionalHeaders,
       providerOptions,
     } = options;
-
-    const warnings: TranscriptionModelV1CallWarning[] = [];
 
     // Convert Uint8Array to base64 string if needed
     const audioData =
@@ -134,6 +132,8 @@ export class ScxTranscriptionModel implements TranscriptionModelV1 {
         startSecond: seg.start,
         endSecond: seg.end,
       })) ?? [];
+
+    const warnings: SharedV3Warning[] = [];
 
     return {
       text: responseBody.text ?? '',

@@ -1,9 +1,9 @@
 import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
 import type {
-  EmbeddingModelV1,
-  LanguageModelV1,
-  ProviderV1,
-  TranscriptionModelV1,
+  EmbeddingModelV3,
+  LanguageModelV3,
+  ProviderV3,
+  TranscriptionModelV3,
 } from '@ai-sdk/provider';
 import {
   loadApiKey,
@@ -16,42 +16,43 @@ import type { ScxTranscriptionModelId } from './scx-transcription-options.js';
 import { ScxEmbeddingModel } from './scx-embedding-model.js';
 import { ScxTranscriptionModel } from './scx-transcription-model.js';
 
-export interface ScxProvider extends ProviderV1 {
+export interface ScxProvider extends ProviderV3 {
   /**
    * Creates a language model for chat completions.
    * @param modelId - The model ID to use (e.g., 'DeepSeek-V3.1', 'Llama-4-Maverick-17B-128E-Instruct')
    */
-  (modelId: ScxChatModelId): LanguageModelV1;
+  (modelId: ScxChatModelId): LanguageModelV3;
 
   /**
    * Creates a language model for chat completions.
    * @param modelId - The model ID to use
    */
-  languageModel(modelId: ScxChatModelId): LanguageModelV1;
+  languageModel(modelId: ScxChatModelId): LanguageModelV3;
 
   /**
    * Creates a language model for chat completions.
    * @param modelId - The model ID to use
    */
-  chat(modelId: ScxChatModelId): LanguageModelV1;
+  chat(modelId: ScxChatModelId): LanguageModelV3;
 
   /**
    * Creates an embedding model.
    * @param modelId - The embedding model ID (e.g., 'E5-Mistral-7B-Instruct')
    */
-  embedding(modelId: ScxEmbeddingModelId): EmbeddingModelV1<string>;
+  embeddingModel(modelId: ScxEmbeddingModelId): EmbeddingModelV3;
 
   /**
    * Creates an embedding model.
    * @param modelId - The embedding model ID
+   * @deprecated Use `embeddingModel` instead.
    */
-  textEmbeddingModel(modelId: ScxEmbeddingModelId): EmbeddingModelV1<string>;
+  textEmbeddingModel(modelId: ScxEmbeddingModelId): EmbeddingModelV3;
 
   /**
    * Creates a transcription model.
    * @param modelId - The transcription model ID (e.g., 'whisper-large-v3')
    */
-  transcription(modelId: ScxTranscriptionModelId): TranscriptionModelV1;
+  transcriptionModel(modelId: ScxTranscriptionModelId): TranscriptionModelV3;
 }
 
 export interface ScxProviderSettings {
@@ -78,7 +79,7 @@ export interface ScxProviderSettings {
 }
 
 /**
- * Creates an SCX provider instance.
+ * Creates an SCX provider instance (ProviderV3).
  *
  * @example
  * ```ts
@@ -120,13 +121,11 @@ export function createScx(options: ScxProviderSettings = {}): ScxProvider {
     fetch: options.fetch,
   });
 
-  const createChatModel = (modelId: ScxChatModelId): LanguageModelV1 => {
+  const createChatModel = (modelId: ScxChatModelId): LanguageModelV3 => {
     return openaiCompatible.chatModel(modelId);
   };
 
-  const createEmbeddingModel = (
-    modelId: ScxEmbeddingModelId
-  ): EmbeddingModelV1<string> => {
+  const createEmbeddingModel = (modelId: ScxEmbeddingModelId): EmbeddingModelV3 => {
     return new ScxEmbeddingModel(modelId, {
       provider: 'scx.embedding',
       baseURL,
@@ -137,7 +136,7 @@ export function createScx(options: ScxProviderSettings = {}): ScxProvider {
 
   const createTranscriptionModel = (
     modelId: ScxTranscriptionModelId
-  ): TranscriptionModelV1 => {
+  ): TranscriptionModelV3 => {
     return new ScxTranscriptionModel(modelId, {
       provider: 'scx.transcription',
       baseURL,
@@ -146,7 +145,7 @@ export function createScx(options: ScxProviderSettings = {}): ScxProvider {
     });
   };
 
-  const provider = function (modelId: ScxChatModelId): LanguageModelV1 {
+  const provider = function (modelId: ScxChatModelId): LanguageModelV3 {
     if (new.target) {
       throw new Error(
         'The SCX model function cannot be called with the new keyword.'
@@ -155,11 +154,19 @@ export function createScx(options: ScxProviderSettings = {}): ScxProvider {
     return createChatModel(modelId);
   } as ScxProvider;
 
+  Object.defineProperty(provider, 'specificationVersion', {
+    value: 'v3',
+    writable: false,
+    enumerable: true,
+  });
   provider.languageModel = createChatModel;
   provider.chat = createChatModel;
-  provider.embedding = createEmbeddingModel;
+  provider.embeddingModel = createEmbeddingModel;
   provider.textEmbeddingModel = createEmbeddingModel;
-  provider.transcription = createTranscriptionModel;
+  provider.transcriptionModel = createTranscriptionModel;
+  provider.imageModel = () => {
+    throw new Error('Image model not supported');
+  };
 
   return provider;
 }
