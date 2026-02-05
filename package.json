@@ -1,0 +1,63 @@
+{
+  "name": "scx-ai-provider",
+  "version": "0.1.0",
+  "description": "SCX AI provider for the Vercel AI SDK",
+  "license": "Apache-2.0",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "bun run clean && bun run build:esm && bun run build:cjs && bun run build:types",
+    "build:esm": "bun build ./src/index.ts --outdir ./dist --target node --format esm --sourcemap=external",
+    "build:cjs": "bun build ./src/index.ts --outdir ./dist/cjs --target node --format cjs --sourcemap=external && mv ./dist/cjs/index.js ./dist/index.cjs && mv ./dist/cjs/index.js.map ./dist/index.cjs.map && rmdir ./dist/cjs",
+    "build:types": "tsc --emitDeclarationOnly --declaration --outDir dist && cp ./dist/index.d.ts ./dist/index.d.cts",
+    "dev": "bun run build --watch",
+    "clean": "rm -rf dist",
+    "prepublishOnly": "bun run build",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@ai-sdk/openai-compatible": "^0.2.14",
+    "@ai-sdk/provider": "^1.1.3",
+    "@ai-sdk/provider-utils": "^2.2.8"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "typescript": "^5.8.3"
+  },
+  "peerDependencies": {
+    "ai": ">=4.0.0"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/scx-ai/scx-ai-provider"
+  },
+  "keywords": [
+    "ai",
+    "scx",
+    "vercel-ai-sdk",
+    "llm",
+    "language-model",
+    "embedding",
+    "transcription"
+  ]
+}
